@@ -345,116 +345,118 @@ local function CreateTab(name)
 
     -- FIXED SCROLLABLE DROPDOWN
     function elements:Dropdown(name, options, default, callback)
-        local DropdownFrame = Instance.new("Frame")
-        DropdownFrame.Size = UDim2.new(1, -40, 0, 40)
-        DropdownFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 55)
-        DropdownFrame.Parent = TabContent
+    local DropdownFrame = Instance.new("Frame")
+    DropdownFrame.Size = UDim2.new(1, -40, 0, 40)
+    DropdownFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 55)
+    DropdownFrame.Parent = TabContent
 
-        local DropdownCorner = Instance.new("UICorner")
-        DropdownCorner.CornerRadius = UDim.new(0, 8)
-        DropdownCorner.Parent = DropdownFrame
+    local DropdownCorner = Instance.new("UICorner")
+    DropdownCorner.CornerRadius = UDim.new(0, 8)
+    DropdownCorner.Parent = DropdownFrame
 
-        local DropdownLabel = Instance.new("TextLabel")
-        DropdownLabel.Size = UDim2.new(1, -60, 1, 0)
-        DropdownLabel.BackgroundTransparency = 1
-        DropdownLabel.Text = name
-        DropdownLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
-        DropdownLabel.Font = Enum.Font.Gotham
-        DropdownLabel.TextSize = 16
-        DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
-        DropdownLabel.Position = UDim2.new(0, 15, 0, 0)
-        DropdownLabel.Parent = DropdownFrame
+    local DropdownLabel = Instance.new("TextLabel")
+    DropdownLabel.Size = UDim2.new(1, -60, 1, 0)
+    DropdownLabel.BackgroundTransparency = 1
+    DropdownLabel.Text = name
+    DropdownLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+    DropdownLabel.Font = Enum.Font.Gotham
+    DropdownLabel.TextSize = 16
+    DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DropdownLabel.Position = UDim2.new(0, 15, 0, 0)
+    DropdownLabel.Parent = DropdownFrame
 
-        local SelectedText = Instance.new("TextLabel")
-        SelectedText.Size = UDim2.new(0, 150, 1, 0)
-        SelectedText.Position = UDim2.new(1, -165, 0, 0)
-        SelectedText.BackgroundTransparency = 1
-        SelectedText.Text = default or (options[1] or "None")
-        SelectedText.TextColor3 = Color3.fromRGB(255, 180, 255)
-        SelectedText.Font = Enum.Font.Gotham
-        SelectedText.TextSize = 16
-        SelectedText.TextXAlignment = Enum.TextXAlignment.Right
-        SelectedText.Parent = DropdownFrame
+    local SelectedText = Instance.new("TextLabel")
+    SelectedText.Size = UDim2.new(0, 150, 1, 0)
+    SelectedText.Position = UDim2.new(1, -165, 0, 0)
+    SelectedText.BackgroundTransparency = 1
+    SelectedText.Text = default or (options[1] or "None")
+    SelectedText.TextColor3 = Color3.fromRGB(255, 180, 255)
+    SelectedText.Font = Enum.Font.Gotham
+    SelectedText.TextSize = 16
+    SelectedText.TextXAlignment = Enum.TextXAlignment.Right
+    SelectedText.Parent = DropdownFrame
 
-        local DropButton = Instance.new("TextButton")
-        DropButton.Size = UDim2.new(1, 0, 1, 0)
-        DropButton.BackgroundTransparency = 1
-        DropButton.Text = ""
-        DropButton.Parent = DropdownFrame
+    local DropButton = Instance.new("TextButton")
+    DropButton.Size = UDim2.new(1, 0, 1, 0)
+    DropButton.BackgroundTransparency = 1
+    DropButton.Text = ""
+    DropButton.Parent = DropdownFrame
 
-        local ListFrame = Instance.new("ScrollingFrame")
-        ListFrame.Size = UDim2.new(1, 0, 0, 0)
-        ListFrame.Position = UDim2.new(0, 0, 1, 5)
-        ListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
-        ListFrame.BorderSizePixel = 0
-        ListFrame.ScrollBarThickness = 4
-        ListFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 100)
-        ListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-        ListFrame.Visible = false
-        ListFrame.Parent = DropdownFrame
+    local ListFrame = Instance.new("ScrollingFrame")
+    ListFrame.Size = UDim2.new(1, 0, 0, 0)
+    ListFrame.Position = UDim2.new(0, 0, 1, 5)
+    ListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+    ListFrame.BorderSizePixel = 0
+    ListFrame.ScrollBarThickness = 4
+    ListFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 100)
+    ListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ListFrame.Visible = false
+    ListFrame.Parent = DropdownFrame
 
-        local ListCorner = Instance.new("UICorner")
-        ListCorner.CornerRadius = UDim.new(0, 8)
-        ListCorner.Parent = ListFrame
+    local ListCorner = Instance.new("UICorner")
+    ListCorner.CornerRadius = UDim.new(0, 8)
+    ListCorner.Parent = ListFrame
 
-        local ListLayout = Instance.new("UIListLayout")
-        ListLayout.Padding = UDim.new(0, 4)
-        ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ListLayout.Parent = ListFrame
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Padding = UDim.new(0, 4)
+    ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ListLayout.Parent = ListFrame
 
-        local selected = default or (options[1] or "None")
+    local selected = default or (options[1] or "None")
 
-        local function refreshList()
-            for _, child in pairs(ListFrame:GetChildren()) do
-                if child:IsA("TextButton") then child:Destroy() end
-            end
-
-            for _, opt in ipairs(options) do
-                local OptBtn = Instance.new("TextButton")
-                OptBtn.Size = UDim2.new(1, -12, 0, 32)
-                OptBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-                OptBtn.Text = opt
-                OptBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
-                OptBtn.Font = Enum.Font.Gotham
-                OptBtn.TextSize = 14
-                OptBtn.Parent = ListFrame
-
-                local OptCorner = Instance.new("UICorner")
-                OptCorner.CornerRadius = UDim.new(0, 6)
-                OptCorner.Parent = OptBtn
-
-                OptBtn.MouseButton1Click:Connect(function()
-                    selected = opt
-                    SelectedText.Text = opt
-                    ListFrame.Visible = false
-                    ListFrame.Size = UDim2.new(1, 0, 0, 0)
-                    if callback then callback(selected) end
-                end)
-            end
-
-            ListFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 8)
+    local function refreshList()
+        for _, child in pairs(ListFrame:GetChildren()) do
+            if child:IsA("TextButton") then child:Destroy() end
         end
 
-        refreshList()
+        for _, opt in ipairs(options) do
+            local OptBtn = Instance.new("TextButton")
+            OptBtn.Size = UDim2.new(1, -12, 0, 32)
+            OptBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+            OptBtn.Text = opt
+            OptBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
+            OptBtn.Font = Enum.Font.Gotham
+            OptBtn.TextSize = 14
+            OptBtn.Parent = ListFrame
 
-        DropButton.MouseButton1Click:Connect(function()
-            ListFrame.Visible = not ListFrame.Visible
-            
-            if ListFrame.Visible then
-                local targetHeight = math.min(ListLayout.AbsoluteContentSize.Y + 12, 220)
-                ListFrame.Size = UDim2.new(1, 0, 0, targetHeight)
-            else
+            local OptCorner = Instance.new("UICorner")
+            OptCorner.CornerRadius = UDim.new(0, 6)
+            OptCorner.Parent = OptBtn
+
+            OptBtn.MouseButton1Click:Connect(function()
+                selected = opt
+                SelectedText.Text = opt
+                ListFrame.Visible = false
                 ListFrame.Size = UDim2.new(1, 0, 0, 0)
-            end
-        end)
+                if callback then callback(selected) end
+            end)
+        end
 
-        return {refresh = refreshList, getSelected = function() return selected end}
+        ListFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 8)
+
+        -- Force UI update (fixes stuck placeholder in some executors)
+        local wasVisible = ListFrame.Visible
+        ListFrame.Visible = false
+        task.delay(0.03, function()
+            ListFrame.Visible = wasVisible
+        end)
     end
 
-    return elements
-end
+    refreshList()
 
+    DropButton.MouseButton1Click:Connect(function()
+        ListFrame.Visible = not ListFrame.Visible
+        
+        if ListFrame.Visible then
+            local targetHeight = math.min(ListLayout.AbsoluteContentSize.Y + 12, 220)ListFrame.Size = UDim2.new(1, 0, 0, targetHeight)
+        else
+            ListFrame.Size = UDim2.new(1, 0, 0, 0)
+        end
+    end)
+
+    return {refresh = refreshList, getSelected = function() return selected end}
+end
 -- Hitbox Expander Logic (unchanged)
 local HitboxEnabled = false
 local HitboxSize = 5
