@@ -665,6 +665,7 @@ ScriptsTab:Toggle("Enable Nametags", false, function(state)
 end)
 
 -- FIXED TELEPORT DROPDOWN SECTION
+-- IMPROVED & DEBUG TELEPORT SECTION (2025/2026 fix)
 ScriptsTab:Section("Teleport")
 
 local playerList = {"Loading players..."}
@@ -676,33 +677,59 @@ local TeleportDropdown = ScriptsTab:Dropdown("Select Player", playerList, player
 end)
 
 local function updatePlayerDropdown()
-    local list = {}
+    local newList = {}
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= Players.LocalPlayer then
-            table.insert(list, p.Name)
+        if p ~= Players.LocalPlayer and p.Name then
+            table.insert(newList, p.Name)
         end
     end
-    if #list == 0 then
-        list = {"No players"}
+    
+    if #newList == 0 then
+        newList = {"No players"}
     end
-    playerList = list
-    TeleportDropdown.refresh()
+    
+    print("[DEBUG] Updating dropdown - found " .. #newList .. " players")
+    for i, name in ipairs(newList) do
+        print("   " .. i .. ". " .. name)
+    end
+    
+    -- Safety check
+    if TeleportDropdown and TeleportDropdown.refresh and type(TeleportDropdown.refresh) == "function" then
+        playerList = newList
+        TeleportDropdown.refresh()  -- This should now actually update the list
+        print("[DEBUG] Dropdown refresh called successfully")
+    else
+        warn("[ERROR] TeleportDropdown or .refresh is missing/broken!")
+    end
 end
 
--- Initial update with delay
+-- Initial update - longer delay + repeat attempt
 task.spawn(function()
-    task.wait(1.5)  -- Give game time to load players
+    task.wait(2)           -- increased delay
     updatePlayerDropdown()
+    
+    -- Second attempt if still loading
+    task.wait(3)
+    if #playerList <= 1 or playerList[1] == "Loading players..." then
+        print("[DEBUG] Second attempt - forcing refresh")
+        updatePlayerDropdown()
+    end
 end)
 
+-- Live updates
 Players.PlayerAdded:Connect(function()
-    task.delay(0.6, updatePlayerDropdown)
+    task.delay(0.8, updatePlayerDropdown)
 end)
 
 Players.PlayerRemoving:Connect(function()
-    task.delay(0.4, updatePlayerDropdown)
+    task.delay(0.6, updatePlayerDropdown)
 end)
 
+-- Manual debug trigger (press this button in Scripts tab to force refresh)
+ScriptsTab:Button("Force Refresh List (Debug)", function()
+    print("[DEBUG] Manual force refresh triggered")
+    updatePlayerDropdown()
+end)
 -- Settings Tab
 SettingsTab:Section("Player Settings")
 SettingsTab:Toggle("Speed Hack", false, function(value)
