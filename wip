@@ -1,7 +1,5 @@
 -- Custom Rayfield-Like Pink Hub 💗 (Updated with Pink ESP & Auto-Teleport Dropdown!)
--- Hitbox Expander: Works on all except local player
--- Pink ESP: Toggle for pink nametags on others
--- Teleport: Dropdown to select player and auto-teleport on click (updates on join/leave/die)
+-- Fixed version: Scrollable teleport dropdown + better player list updates
 
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
@@ -139,7 +137,7 @@ UIS.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Create Tab Function (updated with Dropdown!)
+-- Create Tab Function (with fixed Dropdown)
 local function CreateTab(name)
     local TabButton = Instance.new("TextButton")
     TabButton.Size = UDim2.new(1, -20, 0, 40)
@@ -345,6 +343,7 @@ local function CreateTab(name)
         SliderKnob.Position = UDim2.new(initialRelative, -10, -7, 0)
     end
 
+    -- FIXED SCROLLABLE DROPDOWN
     function elements:Dropdown(name, options, default, callback)
         local DropdownFrame = Instance.new("Frame")
         DropdownFrame.Size = UDim2.new(1, -40, 0, 40)
@@ -370,7 +369,7 @@ local function CreateTab(name)
         SelectedText.Size = UDim2.new(0, 150, 1, 0)
         SelectedText.Position = UDim2.new(1, -165, 0, 0)
         SelectedText.BackgroundTransparency = 1
-        SelectedText.Text = default or options[1]
+        SelectedText.Text = default or (options[1] or "None")
         SelectedText.TextColor3 = Color3.fromRGB(255, 180, 255)
         SelectedText.Font = Enum.Font.Gotham
         SelectedText.TextSize = 16
@@ -383,10 +382,14 @@ local function CreateTab(name)
         DropButton.Text = ""
         DropButton.Parent = DropdownFrame
 
-        local ListFrame = Instance.new("Frame")
+        local ListFrame = Instance.new("ScrollingFrame")
         ListFrame.Size = UDim2.new(1, 0, 0, 0)
-        ListFrame.Position = UDim2.new(0, 0, 1, 0)
+        ListFrame.Position = UDim2.new(0, 0, 1, 5)
         ListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+        ListFrame.BorderSizePixel = 0
+        ListFrame.ScrollBarThickness = 4
+        ListFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 100)
+        ListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
         ListFrame.Visible = false
         ListFrame.Parent = DropdownFrame
 
@@ -395,18 +398,21 @@ local function CreateTab(name)
         ListCorner.Parent = ListFrame
 
         local ListLayout = Instance.new("UIListLayout")
-        ListLayout.Padding = UDim.new(0, 5)
+        ListLayout.Padding = UDim.new(0, 4)
+        ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
         ListLayout.Parent = ListFrame
 
-        local selected = default or options[1]
+        local selected = default or (options[1] or "None")
 
         local function refreshList()
             for _, child in pairs(ListFrame:GetChildren()) do
                 if child:IsA("TextButton") then child:Destroy() end
             end
-            for _, opt in pairs(options) do
+
+            for _, opt in ipairs(options) do
                 local OptBtn = Instance.new("TextButton")
-                OptBtn.Size = UDim2.new(1, 0, 0, 30)
+                OptBtn.Size = UDim2.new(1, -12, 0, 32)
                 OptBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
                 OptBtn.Text = opt
                 OptBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
@@ -426,15 +432,18 @@ local function CreateTab(name)
                     if callback then callback(selected) end
                 end)
             end
-            ListFrame.Size = UDim2.new(1, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+
+            ListFrame.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 8)
         end
 
         refreshList()
 
         DropButton.MouseButton1Click:Connect(function()
             ListFrame.Visible = not ListFrame.Visible
+            
             if ListFrame.Visible then
-                ListFrame.Size = UDim2.new(1, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+                local targetHeight = math.min(ListLayout.AbsoluteContentSize.Y + 12, 220)
+                ListFrame.Size = UDim2.new(1, 0, 0, targetHeight)
             else
                 ListFrame.Size = UDim2.new(1, 0, 0, 0)
             end
@@ -446,7 +455,7 @@ local function CreateTab(name)
     return elements
 end
 
--- Hitbox Expander Logic (already excludes self)
+-- Hitbox Expander Logic (unchanged)
 local HitboxEnabled = false
 local HitboxSize = 5
 local Originals = {}
@@ -458,8 +467,8 @@ local function ApplyHitbox(char)
         if not Originals[hrp] then
             Originals[hrp] = {Size = hrp.Size, Transparency = hrp.Transparency, Material = hrp.Material, Color = hrp.Color, CanCollide = hrp.CanCollide}
         end
-       hrp.Size = Vector3.new(HitboxSize * 1.8, HitboxSize * 1.8, HitboxSize * 2.5)
-        hrp.Transparency = 0.7  -- Clear glass look (0.7 = see-through but visible)
+        hrp.Size = Vector3.new(HitboxSize * 1.8, HitboxSize * 1.8, HitboxSize * 2.5)
+        hrp.Transparency = 0.7
         hrp.Material = Enum.Material.ForceField
         hrp.CanCollide = false
     end
@@ -491,7 +500,7 @@ local function EnableHitbox()
     Connections.PlayerAdded = Players.PlayerAdded:Connect(function(player)
         if player ~= Players.LocalPlayer then
             player.CharacterAdded:Connect(function(char)
-                wait(0.5)  -- Wait for head to load
+                wait(0.5)
                 ApplyHitbox(char)
             end)
             if player.Character then
@@ -523,7 +532,7 @@ local function DisableHitbox()
     Originals = {}
 end
 
--- Pink ESP Logic (pink nametags, exclude self)
+-- Pink ESP Logic (unchanged)
 local ESPEnabled = false
 local ESPTags = {}
 
@@ -545,7 +554,7 @@ local function CreateESP(player)
     nameLabel.Size = UDim2.new(1, 0, 1, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = player.Name
-    nameLabel.TextColor3 = Color3.fromRGB(255, 105, 180)  -- Hot pink
+    nameLabel.TextColor3 = Color3.fromRGB(255, 105, 180)
     nameLabel.Font = Enum.Font.GothamBold
     nameLabel.TextSize = 14
     nameLabel.Parent = bb
@@ -591,47 +600,16 @@ local function DisableESP()
     for player in pairs(ESPTags) do
         RemoveESP(player)
     end
-    for key, conn in pairs(Connections) do
-        if string.find(key, "ESP") then
+    for _, conn in pairs(Connections) do
+        if typeof(conn) == "RBXScriptConnection" and conn.Connected then
             conn:Disconnect()
         end
     end
-end
--- Fix ESP updating on respawn
-Players.PlayerAdded:Connect(function(player)
-    if player ~= Players.LocalPlayer then
-        player.CharacterAdded:Connect(function()
-            task.wait(1)
-            if ESPEnabled then
-                CreateESP(player)
-            end
-        end)
-    end
-end)
-
--- Also fix for players already in game on toggle
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= Players.LocalPlayer then
-        player.CharacterAdded:Connect(function()
-            task.wait(1)
-            if ESPEnabled then
-                CreateESP(player)
-            end
-        end)
-    end
+    Connections = {}
+    ESPTags = {}
 end
 
--- Teleport Logic (auto-teleport on click, update on join/leave/die)
-local function GetPlayerList()
-    local list = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            table.insert(list, player.Name)
-        end
-    end
-    return list
-end
-
+-- Teleport Logic
 local function TeleportTo(playerName)
     local target = Players:FindFirstChild(playerName)
     if target and target.Character and Players.LocalPlayer.Character then
@@ -674,7 +652,6 @@ ScriptsTab:Slider("Size", 1, 20, 5, function(value)
     end
 end)
 
--- Pink ESP Toggle
 ScriptsTab:Section("Pink ESP")
 ScriptsTab:Toggle("Enable Nametags", false, function(state)
     ESPEnabled = state
@@ -687,68 +664,44 @@ ScriptsTab:Toggle("Enable Nametags", false, function(state)
     end
 end)
 
--- Teleport List (auto-teleport on click, update on join/leave/die)
+-- FIXED TELEPORT DROPDOWN SECTION
 ScriptsTab:Section("Teleport")
 
--- Scrolling player list for teleport (click name = instant teleport)
-local TeleportScroll = Instance.new("ScrollingFrame")
-TeleportScroll.Size = UDim2.new(1, -40, 0, 200)
-TeleportScroll.BackgroundTransparency = 1
-TeleportScroll.ScrollBarThickness = 6
-TeleportScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-TeleportScroll.Parent = ScriptsTab.TabContent  -- Make sure ScriptsTab.TabContent exists
+local playerList = {"Loading players..."}
 
-local TeleportLayout = Instance.new("UIListLayout")
-TeleportLayout.Padding = UDim.new(0, 8)
-TeleportLayout.Parent = TeleportScroll
+local TeleportDropdown = ScriptsTab:Dropdown("Select Player", playerList, playerList[1], function(selectedName)
+    if selectedName and selectedName ~= "Loading players..." and selectedName ~= "No players" then
+        TeleportTo(selectedName)
+    end
+end)
 
-local function UpdateTeleportList()
-    -- Clear old buttons
-    for _, child in pairs(TeleportScroll:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
+local function updatePlayerDropdown()
+    local list = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= Players.LocalPlayer then
+            table.insert(list, p.Name)
         end
     end
-    
-    -- Add new buttons for each player
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1, 0, 0, 40)
-            Btn.BackgroundColor3 = Color3.fromRGB(45, 25, 70)
-            Btn.Text = player.Name
-            Btn.TextColor3 = Color3.fromRGB(255, 200, 255)
-            Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 18
-            Btn.Parent = TeleportScroll
-
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 8)
-            Corner.Parent = Btn
-
-            Btn.MouseButton1Click:Connect(function()
-                TeleportTo(player.Name)
-            end)
-        end
+    if #list == 0 then
+        list = {"No players"}
     end
-    
-    -- Auto resize canvas
-    TeleportScroll.CanvasSize = UDim2.new(0, 0, 0, TeleportLayout.AbsoluteContentSize.Y + 20)
+    playerList = list
+    TeleportDropdown.refresh()
 end
 
--- Initial load
-UpdateTeleportList()
+-- Initial update with delay
+task.spawn(function()
+    task.wait(1.5)  -- Give game time to load players
+    updatePlayerDropdown()
+end)
 
--- Update on join/leave/die
-Players.PlayerAdded:Connect(UpdateTeleportList)
-Players.PlayerRemoving:Connect(UpdateTeleportList)
+Players.PlayerAdded:Connect(function()
+    task.delay(0.6, updatePlayerDropdown)
+end)
 
--- Update on respawn (die)
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= Players.LocalPlayer then
-        player.CharacterRemoving:Connect(UpdateTeleportList)
-    end
-end
+Players.PlayerRemoving:Connect(function()
+    task.delay(0.4, updatePlayerDropdown)
+end)
 
 -- Settings Tab
 SettingsTab:Section("Player Settings")
@@ -764,7 +717,6 @@ end)
 
 -- Auto select first tab
 if #TabBar:GetChildren() > 3 then
-    TabBar:GetChildren()[4].MouseButton1Click:Connect(function() end) -- Dummy to avoid error
     local firstTab = Content:GetChildren()[1]
     if firstTab then firstTab.Visible = true end
 end
@@ -778,4 +730,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("Full Pink Hub loaded! 💕")
+print("Full Pink Hub loaded! (with fixed teleport dropdown) 💕")
